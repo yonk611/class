@@ -13,6 +13,20 @@ st.set_page_config(
 
 st.title("📊 2025년 9월 주민등록 인구 및 세대 현황")
 
+# 다양한 인코딩으로 파일 읽기
+def read_csv_safe(file):
+    encodings = ['euc-kr', 'utf-8', 'cp949', 'latin-1']
+    
+    for enc in encodings:
+        try:
+            file.seek(0)
+            df = pd.read_csv(file, encoding=enc)
+            return df, enc
+        except:
+            continue
+    
+    return None, None
+
 # 파일 업로드
 st.sidebar.header("📁 파일 업로드")
 uploaded_file = st.sidebar.file_uploader(
@@ -24,9 +38,14 @@ uploaded_file = st.sidebar.file_uploader(
 if uploaded_file is not None:
     # 파일 읽기
     try:
-        df = pd.read_csv(uploaded_file, encoding="euc-kr")
+        df, detected_encoding = read_csv_safe(uploaded_file)
+        
+        if df is None:
+            st.error(f"❌ 파일을 읽을 수 없습니다. 지원하는 인코딩: euc-kr, utf-8, cp949")
+            st.stop()
+        
         df = df.dropna()
-        st.sidebar.success("✅ 파일 로드 성공!")
+        st.sidebar.success(f"✅ 파일 로드 성공! (인코딩: {detected_encoding})")
     except Exception as e:
         st.error(f"❌ 파일 로드 실패: {e}")
         st.stop()
