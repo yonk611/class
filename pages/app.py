@@ -3,6 +3,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+import os
 
 # 페이지 설정
 st.set_page_config(
@@ -14,7 +15,32 @@ st.set_page_config(
 # 캐싱으로 데이터 로드 최적화
 @st.cache_data
 def load_data():
-    file_path = Path("data/202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv")
+    # 현재 스크립트 디렉토리 기준
+    script_dir = Path(__file__).parent
+    
+    # 가능한 경로들
+    possible_paths = [
+        script_dir / "data" / "202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv",
+        script_dir / "202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv",
+        Path("data/202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv"),
+        Path("202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv"),
+    ]
+    
+    file_path = None
+    for path in possible_paths:
+        if path.exists():
+            file_path = path
+            st.write(f"✅ 파일 발견: {file_path}")
+            break
+    
+    if file_path is None:
+        st.error("❌ CSV 파일을 찾을 수 없습니다!")
+        st.write("현재 작업 디렉토리:", os.getcwd())
+        st.write("시도한 경로들:")
+        for path in possible_paths:
+            st.write(f"  - {path} (존재: {path.exists()})")
+        st.stop()
+    
     df = pd.read_csv(file_path, encoding="euc-kr")
     df = df.dropna()
     return df
