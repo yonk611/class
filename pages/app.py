@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
-import chardet
+import io
 
 # 페이지 설정
 st.set_page_config(
@@ -18,27 +18,15 @@ st.sidebar.header("📁 파일 업로드")
 uploaded_file = st.sidebar.file_uploader(
     "CSV 파일을 선택해주세요",
     type="csv",
-    help="CSV 파일을 업로드하세요"
+    help="202509_202509_jumindeungrogingumicsedaehyeonhwang_weolgan.csv 파일을 업로드하세요"
 )
 
 if uploaded_file is not None:
-    # 파일 읽기 (인코딩 자동 감지)
+    # 파일 읽기
     try:
-        # 파일 내용 읽기
-        raw_data = uploaded_file.read()
-        
-        # 인코딩 감지
-        detected = chardet.detect(raw_data)
-        encoding = detected['encoding']
-        
-        st.sidebar.info(f"✅ 감지된 인코딩: {encoding}")
-        
-        # 파일 다시 읽기
-        uploaded_file.seek(0)
-        df = pd.read_csv(uploaded_file, encoding=encoding)
+        df = pd.read_csv(uploaded_file, encoding="euc-kr")
         df = df.dropna()
         st.sidebar.success("✅ 파일 로드 성공!")
-        
     except Exception as e:
         st.error(f"❌ 파일 로드 실패: {e}")
         st.stop()
@@ -176,15 +164,6 @@ if uploaded_file is not None:
     # 탭 4: 데이터 조회
     with tab4:
         st.subheader("원본 데이터 조회")
-        
-        cols_to_numeric = [
-            "2025년09월_총인구수",
-            "2025년09월_세대수",
-            "2025년09월_세대당 인구",
-            "2025년09월_남자 인구수",
-            "2025년09월_여자 인구수",
-            "2025년09월_남여 비율"
-        ]
         
         col1, col2 = st.columns(2)
         with col1:
